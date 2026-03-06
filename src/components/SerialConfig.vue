@@ -24,6 +24,13 @@ const isConnected = ref(false)
 const selectedDeviceId = ref('')
 const baudRates = [921600, 460800, 230400, 115200, 57600, 38400, 19200, 9600, 4800, 2400, 1200]
 
+const handleBaudRateChange = (val: string | number) => {
+  const num = parseInt(String(val))
+  if (!isNaN(num) && num > 0) {
+    serialConfig.value.baudRate = num
+  }
+}
+
 const handleConfigChange = async () => {
   if (isConnected.value) {
     try {
@@ -279,7 +286,13 @@ const handleConenctClick = () => {
       </el-form>
       <el-form v-else :model="serialConfig" :inline="true" size="small" class="config-section">
         <el-form-item label="波特率">
-          <el-select v-model="serialConfig.baudRate" style="width: 80px;">
+          <el-select
+            :value="serialConfig.baudRate"
+            filterable
+            allow-create
+            style="width: 100px;"
+            @change="handleBaudRateChange"
+          >
             <el-option v-for="rate in baudRates" :key="rate" :value="rate" />
           </el-select>
         </el-form-item>
