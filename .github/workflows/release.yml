@@ -40,7 +40,7 @@ jobs:
         run: yarn install
 
       - name: Build
-        run: yarn build --base ./
+        run: yarn build:desktop
 
       - name: Upload frontend artifact
         uses: actions/upload-artifact@v4
