@@ -22,7 +22,28 @@ const serialWriter = ref<WritableStreamDefaultWriter | null>(null)
 const serialReader = ref<ReadableStreamDefaultReader | null>(null)
 const isConnected = ref(false)
 const selectedDeviceId = ref('')
-const baudRates = [921600, 460800, 230400, 115200, 57600, 38400, 19200, 9600, 4800, 2400, 1200]
+const DEFAULT_BAUD_RATES = [921600, 460800, 230400, 115200, 57600, 38400, 19200, 9600, 4800, 2400, 1200]
+
+const loadBaudRateList = (): number[] => {
+  try {
+    const saved = localStorage.getItem('config.baudRateList')
+    return saved ? JSON.parse(saved) : [...DEFAULT_BAUD_RATES]
+  } catch {
+    return [...DEFAULT_BAUD_RATES]
+  }
+}
+
+const baudRateList = ref<number[]>(loadBaudRateList())
+
+const saveBaudRateList = () => {
+  localStorage.setItem('config.baudRateList', JSON.stringify(baudRateList.value))
+}
+
+const deleteBaudRate = (rate: number, event: MouseEvent) => {
+  event.stopPropagation()
+  baudRateList.value = baudRateList.value.filter(r => r !== rate)
+  saveBaudRateList()
+}
 
 const baudRateModel = computed({
   get: () => String(serialConfig.value.baudRate),
@@ -30,6 +51,10 @@ const baudRateModel = computed({
     const num = parseInt(val)
     if (!isNaN(num) && num > 0) {
       serialConfig.value.baudRate = num
+      if (!baudRateList.value.includes(num)) {
+        baudRateList.value = [num, ...baudRateList.value]
+        saveBaudRateList()
+      }
     }
   }
 })
@@ -294,9 +319,14 @@ const handleConenctClick = () => {
             filterable
             allow-create
             default-first-option
-            style="width: 100px;"
+            style="width: 110px;"
           >
-            <el-option v-for="rate in baudRates" :key="rate" :value="String(rate)" :label="String(rate)" />
+            <el-option v-for="rate in baudRateList" :key="rate" :value="String(rate)" :label="String(rate)">
+              <div class="baud-rate-option">
+                <span>{{ rate }}</span>
+                <el-icon class="delete-rate-icon" @click="(e: MouseEvent) => deleteBaudRate(rate, e)"><Close /></el-icon>
+              </div>
+            </el-option>
           </el-select>
         </el-form-item>
         <el-form-item label="数据位">
@@ -368,5 +398,22 @@ const handleConenctClick = () => {
 
 :deep(.el-input__wrapper) {
   padding: 0 8px;
+}
+
+.baud-rate-option {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.delete-rate-icon {
+  color: #909399;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.delete-rate-icon:hover {
+  color: #f56c6c;
 }
 </style>
