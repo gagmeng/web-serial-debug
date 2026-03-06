@@ -24,3 +24,6 @@ dist-ssr
 *.sw?
 
 web-serial-debug
+
+package-lock.json
+release/
