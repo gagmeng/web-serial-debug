@@ -287,13 +287,13 @@ const handleConenctClick = () => {
       <el-form v-else :model="serialConfig" :inline="true" size="small" class="config-section">
         <el-form-item label="波特率">
           <el-select
-            :value="serialConfig.baudRate"
+            :value="String(serialConfig.baudRate)"
             filterable
             allow-create
             style="width: 100px;"
             @change="handleBaudRateChange"
           >
-            <el-option v-for="rate in baudRates" :key="rate" :value="rate" />
+            <el-option v-for="rate in baudRates" :key="rate" :value="String(rate)" :label="String(rate)" />
           </el-select>
         </el-form-item>
         <el-form-item label="数据位">
