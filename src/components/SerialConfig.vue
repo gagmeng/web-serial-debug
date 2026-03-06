@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, onMounted, onUnmounted } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { ConfigManager } from '../utils/ConfigManager'
 import { ScriptManager } from '../utils/ScriptManager'
@@ -24,12 +24,15 @@ const isConnected = ref(false)
 const selectedDeviceId = ref('')
 const baudRates = [921600, 460800, 230400, 115200, 57600, 38400, 19200, 9600, 4800, 2400, 1200]
 
-const handleBaudRateChange = (val: string | number) => {
-  const num = parseInt(String(val))
-  if (!isNaN(num) && num > 0) {
-    serialConfig.value.baudRate = num
+const baudRateModel = computed({
+  get: () => String(serialConfig.value.baudRate),
+  set: (val: string) => {
+    const num = parseInt(val)
+    if (!isNaN(num) && num > 0) {
+      serialConfig.value.baudRate = num
+    }
   }
-}
+})
 
 const handleConfigChange = async () => {
   if (isConnected.value) {
@@ -287,11 +290,11 @@ const handleConenctClick = () => {
       <el-form v-else :model="serialConfig" :inline="true" size="small" class="config-section">
         <el-form-item label="波特率">
           <el-select
-            :value="String(serialConfig.baudRate)"
+            v-model="baudRateModel"
             filterable
             allow-create
+            default-first-option
             style="width: 100px;"
-            @change="handleBaudRateChange"
           >
             <el-option v-for="rate in baudRates" :key="rate" :value="String(rate)" :label="String(rate)" />
           </el-select>
