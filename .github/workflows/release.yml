@@ -91,8 +91,8 @@ jobs:
           name: frontend-dist
           path: window/dist
 
-      - name: Install npm dependencies
-        run: npm install
+      - name: Install dependencies
+        run: yarn install
 
       - name: Generate app icon
         run: node scripts/build-icon.mjs
