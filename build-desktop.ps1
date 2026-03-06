@@ -72,6 +72,29 @@ try {
 
   Push-Location $windowDir
   try {
+    Write-Host "Generating app icon..."
+    node (Join-Path $repoRoot 'scripts\build-icon.mjs')
+    Assert-LastExitCode 'build-icon'
+
+    Write-Host "Compiling icon resource..."
+    $windresCandidates = @(
+      (Join-Path $env:USERPROFILE 'tools\llvm-mingw\llvm-mingw-20260224-msvcrt-x86_64\bin\x86_64-w64-mingw32-windres.exe'),
+      'C:\msys64\mingw64\bin\windres.exe',
+      'C:\Program Files\Git\mingw64\bin\windres.exe'
+    )
+    $windres = $windresCandidates | Where-Object { Test-Path $_ } | Select-Object -First 1
+    if (-not $windres) {
+      $wr = Get-Command windres -ErrorAction SilentlyContinue
+      if ($wr) { $windres = $wr.Source }
+    }
+    if ($windres) {
+      & $windres -o rsrc_windows.syso resource.rc
+      Assert-LastExitCode 'windres'
+      Write-Host "  Icon resource compiled: rsrc_windows.syso"
+    } else {
+      Write-Warning 'windres not found, building without icon'
+    }
+
     Write-Host "Building desktop executable..."
     go build -o $exePath
     Assert-LastExitCode 'go build'
