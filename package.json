@@ -7,6 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "build2": "vue-tsc -b && vite build",
+    "build:icon": "node scripts/build-icon.mjs",
     "build:desktop": "vite build --mode desktop",
     "package:desktop": "powershell -ExecutionPolicy Bypass -File ./build-desktop.ps1",
     "package:desktop:run": "powershell -ExecutionPolicy Bypass -File ./build-desktop.ps1 -Run",

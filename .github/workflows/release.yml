@@ -80,11 +80,42 @@ jobs:
         with:
           go-version: '1.21.x'
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
       - name: Download frontend artifact
         uses: actions/download-artifact@v4
         with:
           name: frontend-dist
           path: window/dist
+
+      - name: Install npm dependencies
+        run: npm install
+
+      - name: Generate app icon
+        run: node scripts/build-icon.mjs
+
+      - name: Compile Windows icon resource
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $candidates = @(
+            'C:\msys64\mingw64\bin\windres.exe',
+            'C:\Program Files\Git\mingw64\bin\windres.exe'
+          )
+          $windres = $candidates | Where-Object { Test-Path $_ } | Select-Object -First 1
+          if (-not $windres) {
+            $windres = (Get-Command windres -ErrorAction SilentlyContinue)?.Source
+          }
+          if ($windres) {
+            cd window
+            & $windres -o rsrc_windows.syso resource.rc
+            Write-Output "Icon resource compiled"
+          } else {
+            Write-Warning "windres not found, skipping icon"
+          }
 
       - name: Build desktop app
         run: |
