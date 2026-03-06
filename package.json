@@ -7,6 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "build2": "vue-tsc -b && vite build",
+    "build:desktop": "vite build --base=./",
     "preview": "vite preview"
   },
   "dependencies": {

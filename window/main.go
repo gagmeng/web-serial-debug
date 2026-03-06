@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"strings"
 
 	"github.com/influxdata/influxdb-client-go/v2"
 	"github.com/webview/webview_go"
@@ -106,7 +107,13 @@ func main() {
 		if runtime.GOOS == "darwin" {
 			resourceDir = filepath.Join(resourceDir, "../Resources")
 		}
-		resourcePath = fmt.Sprintf("file://%s/dist/index.html", resourceDir)
+		// 统一转换为正斜杠，Windows 下 file:// URL 需要三斜杠 + 正斜杠路径
+		resourceDirSlash := strings.ReplaceAll(filepath.ToSlash(resourceDir), " ", "%20")
+		if runtime.GOOS == "windows" {
+			resourcePath = fmt.Sprintf("file:///%s/dist/index.html", resourceDirSlash)
+		} else {
+			resourcePath = fmt.Sprintf("file://%s/dist/index.html", resourceDirSlash)
+		}
 	}
 
 	// 加载前端页面
