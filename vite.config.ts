@@ -2,9 +2,11 @@ import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 
 // https://vite.dev/config/
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   plugins: [vue()],
-  base: '/web-serial-debug/',
+  // GitHub Pages needs the repo base path, while the desktop app must use
+  // relative asset URLs so file:// loading works on Windows/macOS/Linux.
+  base: mode === 'desktop' ? './' : '/web-serial-debug/',
   build: {
     chunkSizeWarningLimit: 1500,
     rollupOptions: {
@@ -23,4 +25,4 @@ export default defineConfig({
   define: {
     __BUILD_TIME__: JSON.stringify(new Date().toISOString())
   }
-})
+}))
