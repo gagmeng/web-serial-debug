@@ -7,7 +7,10 @@
     "dev": "vite",
     "build": "vite build",
     "build2": "vue-tsc -b && vite build",
-    "build:desktop": "vite build --base=./",
+    "build:desktop": "vite build --mode desktop",
+    "package:desktop": "powershell -ExecutionPolicy Bypass -File ./build-desktop.ps1",
+    "package:desktop:run": "powershell -ExecutionPolicy Bypass -File ./build-desktop.ps1 -Run",
+    "package:desktop:zip": "powershell -ExecutionPolicy Bypass -File ./build-desktop.ps1 -SkipInstall",
     "preview": "vite preview"
   },
   "dependencies": {
