@@ -51,10 +51,11 @@ jobs:
   build-desktop:
     needs: build-frontend
     strategy:
+      fail-fast: false
       matrix:
         include:
           - os: windows-latest
-            artifact_name: web-serial-debug-windows
+            artifact_name: web-serial-debug-windows.exe
             asset_name: web-serial-debug-windows.zip
           - os: macos-latest
             artifact_name: web-serial-debug-macos
@@ -68,32 +69,46 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      - name: Install Linux system dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.0-dev libgtk-3-dev build-essential
+
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
-          go-version: '1.21'
+          go-version: '1.21.x'
 
       - name: Download frontend artifact
         uses: actions/download-artifact@v4
         with:
           name: frontend-dist
-          path: go/dist
+          path: window/dist
 
       - name: Build desktop app
         run: |
-          cd go
-          go build -v -o ${{ matrix.artifact_name }}
+          cd window
+          go build -v -ldflags "-X main.version=${{ github.event.inputs.version }}" -o ${{ matrix.artifact_name }}
 
-      - name: Create release asset
+      - name: Create release asset (Unix)
+        if: runner.os != 'Windows'
         run: |
-          cd go
-          zip -r ${{ matrix.asset_name }} ${{ matrix.artifact_name }} dist
+          cd window
+          zip -r ../${{ matrix.asset_name }} ${{ matrix.artifact_name }} dist
+
+      - name: Create release asset (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          cd window
+          Compress-Archive -Path @("${{ matrix.artifact_name }}", "dist") -DestinationPath "../${{ matrix.asset_name }}"
 
       - name: Upload release asset
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ github.event.inputs.version }}
           name: Release ${{ github.event.inputs.version }}
-          files: go/${{ matrix.asset_name }}
+          files: ${{ matrix.asset_name }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
